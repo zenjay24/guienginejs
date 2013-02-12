@@ -1,0 +1,47 @@
+﻿@{
+    
+}
+<script src="~/Scripts/jquery-1.7.1.js"></script>
+<script src="~/scripts/GuiEngine.js"></script>
+<script>
+    var gamestr, gameimg;
+    var canvas;
+    var game;
+    var gameObjs;
+    var foo = function () {
+        var Draw = function (context) {
+            debugger;
+        };
+
+        return { Draw: Draw };
+    };
+    $(document).ready(function () {
+        
+        game = GuiEngine.Start();
+        game.SetDebugger("gedebugger");
+        game.Debug(true);
+        
+        canvas = game.GetCanvas("gameCanvas").SetBackgroundColor("#000000");
+        
+        $('#createImageData').bind('click', function () { game.CreateImageData("gameCanvas"); });
+
+        //gamestr = canvas.NewString("string2");
+        //gameimg = canvas.NewImg("img1");
+        gameObjs = canvas.BindGEObjects();
+        $(gameObjs[0]).bind('handlegamephysics', function () {
+            debugger;
+        });
+        var test = new foo();
+        canvas.NewObject(test);
+    });
+    </script>
+
+<canvas id="gameCanvas" data-gengine='{"handleEvents":["mouse", "touch"]}' width="1280" height="720">
+
+</canvas>
+<GEString id='string2' data-gengine='{"canvasid":"gameCanvas","color":"#FFF00F","x":200,"y":400}'>SCREW OFF</GEString>
+<GEIMG id="img1" src="~/Images/logo3w.png" data-gengine='{"canvasid":"gameCanvas","x":330,"y":400}' />
+<form>
+    <input id="createImageData" type="button" value="TakeScreenShot" />
+</form>
+<div id="gedebugger"></div>
