@@ -7,6 +7,7 @@
     _debuggerDiv,
 
     _geTypes = {
+        "GEOBJECT":"GEOBJECT",
         "STRING": "STRING",
         "IMAGE": "IMAGE"
     },
@@ -114,8 +115,9 @@
             var thisCanvas = this;
 
             $(_objectsToRender).each(function (objectIndex, objectToRender) {
-                if (this.GetCanvasID() == thisCanvas.id)
-                    $(this).triggerHandler('handlegamephysics');
+                if (this.GetCanvasID() == thisCanvas.id && this.GamePhysics) {
+                    this.GamePhysics();
+                }
             });
         });
     },
@@ -252,15 +254,27 @@
             window.open(this.toDataURL(), "canvasImage", "left=0,top=0,width=" + this.width + ",height=" + this.height + ",toolbar=0,resizable=0");
         });
     },
-
+    _newGEObject = function (values) {
+        var data = { x: values.x };
+        var geObj = {
+            SetX: function (value) {
+                data.x = value;
+                return this;
+            },
+            GetX: function () {
+                return data.x;
+            }
+        };
+        return geObj;
+    },
     _newString = function (values) {
 
-        content = values == null || values.content == null ? "" : values.content;
-        color = values == null || values.color == null ? "#FFFFFF" : values.color;
-        x = values == null || values.x == null ? 0 : values.x;
-        y = values == null || values.y == null ? 0 : values.y;
-        fontSize = values == null || values.fontSize == null ? "20px" : values.fontSize;
-        fontFamily = values == null || values.fontFamily == null ? "sans" : values.fontFamily;
+        var content = values == null || values.content == null ? "" : values.content;
+        var color = values == null || values.color == null ? "#FFFFFF" : values.color;
+        var x = values == null || values.x == null ? 0 : values.x;
+        var y = values == null || values.y == null ? 0 : values.y;
+        var fontSize = values == null || values.fontSize == null ? "20px" : values.fontSize;
+        var fontFamily = values == null || values.fontFamily == null ? "sans" : values.fontFamily;
 
         var data = {
             "getype": _geTypes.STRING,
@@ -269,9 +283,13 @@
             "color": color,
             "x": x,
             "y": y,
+            "dx": 0,
+            "dy":0,
             "fontSize": fontSize,
             "fontFamily": fontFamily
         };
+
+        var geObj = _newGEObject(data);
 
         var strObject = {
 
@@ -282,7 +300,7 @@
                     "canvasid": data.canvasid,
                     "content": data.content,
                     "color": data.color,
-                    "x": data.x,
+                    //"x": data.x,
                     "y": data.y,
                     "fontSize": data.fontSize,
                     "fontFamily": data.fontFamily
@@ -301,13 +319,13 @@
             GetText: function () {
                 return data.content;
             },
-            SetX: function (value) {
-                data.x = value;
-                return this;
-            },
-            GetX: function () {
-                return data.x;
-            },
+            //SetX: function (value) {
+            //    data.x = value;
+            //    return this;
+            //},
+            //GetX: function () {
+            //    return data.x;
+            //},
             SetY: function (value) {
                 data.y = value;
                 return this;
@@ -315,12 +333,20 @@
             GetY: function () {
                 return data.y;
             },
-            MoveX: function (value) {
+            MoveByX: function (value) {
                 data.x += value;
                 return this;
             },
-            MoveY: function (value) {
+            MoveX: function (value) {
+                data.dx = value;
+                return this;
+            },
+            MoveByY: function (value) {
                 data.y += value;
+                return this;
+            },
+            MoveY: function (value) {
+                data.dy = value;
                 return this;
             },
             SetColor: function (value) {
@@ -343,6 +369,11 @@
             GetFontFamily: function () {
                 return data.fontFamily;
             },
+            GamePhysics: function () {
+
+                data.x = data.x + data.dx;
+                data.y = data.y + data.dy;
+            },
             Draw: function (context) {
                 context.fillStyle = data.color;
                 context.font = data.fontSize + " " + data.fontFamily;
@@ -350,6 +381,8 @@
                 context.fillText(data.content, data.x, data.y);
             }
         };
+
+        $.extend(strObject, geObj, strObject);
 
         _addToRender(strObject);
         return strObject;
@@ -438,10 +471,6 @@
                 }
 
                 context.drawImage(data.img, data.x, data.y);
-                //context.fillStyle = data.color;
-                //context.font = data.fontSize + " " + data.fontFamily;
-                //context.textBaseline = "top";
-                //context.fillText(data.content, data.x, data.y);
             }
         };
 
