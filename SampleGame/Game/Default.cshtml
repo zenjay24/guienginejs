@@ -9,11 +9,10 @@
     var game;
     var gameObjs;
     var foo = function () {
-        var Draw = function (context) {
-            debugger;
+        var draw = function (context) {
         };
 
-        return { Draw: Draw };
+        return { draw: draw };
     };
     $(document).ready(function () {
         
@@ -21,7 +20,7 @@
         game.SetDebugger("gedebugger");
         game.Debug(true);
         
-        canvas = game.GetCanvas("gameCanvas").SetBackgroundColor("#000000");
+        canvas = game.getCanvas("gameCanvas").setBackgroundColor("#000000");
         
         $('#createImageData').bind('click', function () { game.CreateImageData("gameCanvas"); });
 

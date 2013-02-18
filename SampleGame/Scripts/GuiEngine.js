@@ -95,10 +95,10 @@
         HandleInteractionRules();
 
         // Handle Game Physics
-        HandleGamePhysics();
+        handleGamePhysics();
 
         // Draw
-        Draw();
+        draw();
 
         _frameCount++;
     },
@@ -109,20 +109,20 @@
     HandleInteractionRules = function () {
     },
 
-    HandleGamePhysics = function () {
+    handleGamePhysics = function () {
         
         _canvas.each(function (canvasIndex, canvas) {
             var thisCanvas = this;
 
             $(_objectsToRender).each(function (objectIndex, objectToRender) {
-                if (this.GetCanvasID() == thisCanvas.id && this.GamePhysics) {
-                    this.GamePhysics();
+                if (this.getCanvasID() == thisCanvas.id && this.GamePhysics) {
+                    //this.GamePhysics();
                 }
             });
         });
     },
 
-    Draw = function () {
+    draw = function () {
         _canvas.each(function (canvasIndex, canvas) {
             var thisCanvas = this;
             var context = this.getContext(_canvasContext[this.id]);
@@ -135,8 +135,8 @@
             context.fillRect(0, 0, this.width, this.height);
 
             $(_objectsToRender).each(function (objectIndex, objectToRender) {
-                if (this.GetCanvasID() == thisCanvas.id)
-                    this.Draw(context);
+                if (this.getCanvasID() == thisCanvas.id)
+                    this.draw(context);
             });
         });
     },
@@ -160,14 +160,14 @@
         _objectsToRender.push(objectToAdd);
     },
 
-    GetCanvas = function (canvasid) {
+    getCanvas = function (canvasid) {
         thisGame = this;
         thisCanvasID = canvasid;
         var canvasObject = {
             "Game": thisGame,
             "Canvas": $("canvas#" + canvasid),
             NewObject: function (value) {
-                value.GetCanvasID = function () {
+                value.getCanvasID = function () {
                     return canvasid;
                 };
                 _addToRender(value);
@@ -233,7 +233,7 @@
 
                 return _objects;
             },
-            SetBackgroundColor: function (color) {
+            setBackgroundColor: function (color) {
                 _backgroundColors[canvasid] = color;
                 return this;
             }
@@ -254,37 +254,90 @@
             window.open(this.toDataURL(), "canvasImage", "left=0,top=0,width=" + this.width + ",height=" + this.height + ",toolbar=0,resizable=0");
         });
     },
+    // parts with functionallity
+    eventuality = function (that) {
+        var registry = {},
+
+            fire = function (event) {
+                var array,
+                    func,
+                    handler,
+                    i,
+                    type = typeof event === 'string' ? event : event.type;
+
+                if (registry.hasOwnProperty(type)) {
+                    array = registry[type];
+                    for (i = 0; i < array.length; i++) {
+                        handler = array[i];
+                        func = handler.method;
+                        if (typeof func === 'string') {
+                            func = this[func];
+                        }
+
+                        func.apply(this, handler.parameters || [event]);
+                    }
+                }
+                return this;
+            },
+
+            on = function (type, method, parameters) {
+                var handler = {
+                    method: method,
+                    parameters: parameters
+                };
+                if (registry.hasOwnProperty(type)) {
+                    registry[type].push(handler);
+                }
+                else {
+                    registry[type] = [handler];
+                }
+                return this;
+            };
+
+        that.fire = fire;
+        that.on = on;
+
+        return that;
+    },
     // Using the Functional Pattern to define the new base of object
     geObject = function (specs, my) {
-        var that;
+        var that,
+            getX = function () {
+                return my.x;
+            },
+            getY = function () {
+                return my.y;
+            },
+            getCanvasId = function () {
+                return my.canvasid;
+            };
+
         my = my || {};
         my.geType = _geTypes.GEOBJECT;
         my.x = specs.x || 0;
         my.y = specs.y || 0;
         my.canvasid = specs.canvasid;
 
-        var getX = function () {
-            return my.x;
-        },
-        getY = function () {
-            return my.y;
-        },
-        getCanvasId = function () {
-            return my.canvasid;
-        };
-
-
         that = {};
-        that.GetX = getX;
-        that.GetY = getY;
-        that.GetCanvasID = getCanvasId;
+        that.getX = getX;
+        that.getY = getY;
+        that.getCanvasID = getCanvasId;
+
+        eventuality(that);
 
         _addToRender(that);
         return that;
     },
 
     geString = function (specs, my) {
-        var that;
+        var that,
+            draw = function (context) {
+                context.fillStyle = my.color;
+                context.font = my.fontSize + " " + my.fontFamily;
+                context.textBaseline = "top";
+                context.fillText(my.content, my.x, my.y);
+            };
+
         my = my || {};
         my.geType = _geTypes.STRING;
         my.content = specs.content || "NEW STRING";
@@ -292,16 +345,8 @@
         my.fontSize = specs.fontSize || "20px";
         my.fontFamily = specs.fontFamily || "sans";
 
-        var Draw = function (context) {
-            context.fillStyle = my.color;
-            context.font = my.fontSize + " " + my.fontFamily;
-            context.textBaseline = "top";
-            context.fillText(my.content, my.x, my.y);
-        };
-
         that = geObject(specs, my);
-        that.Draw = Draw;
-
+        that.draw = draw;
         return that;
     },
 
@@ -324,60 +369,11 @@
 
         var imgObject = {
 
-            // GetData returns a readonly object with the current values
-            GetData: function () {
-                return {
-                    "getype": data._geTypes.STRING,
-                    "canvasid": data.canvasid,
-                    "src": data.src,
-                    "color": data.color,
-                    "x": data.x,
-                    "y": data.y
-                };
-            },
-            GetGEType: function () {
-                return data.getype;
-            },
-            GetCanvasID: function () {
+            getCanvasID: function () {
                 return data.canvasid;
             },
-            SetSrc: function (value) {
-                data.src = value;
-                return this;
-            },
-            GetSrc: function () {
-                return data.src;
-            },
-            SetX: function (value) {
-                data.x = value;
-                return this;
-            },
-            GetX: function () {
-                return data.x;
-            },
-            SetY: function (value) {
-                data.y = value;
-                return this;
-            },
-            GetY: function () {
-                return data.y;
-            },
-            MoveX: function (value) {
-                data.x += value;
-                return this;
-            },
-            MoveY: function (value) {
-                data.y += value;
-                return this;
-            },
-            SetColor: function (value) {
-                data.color = value;
-                return this;
-            },
-            GetColor: function () {
-                return data.color;
-            },
-            Draw: function (context) {
+           
+            draw: function (context) {
                 if (data.img.src == "") {
                     data.img.src = data.src;
 
@@ -400,7 +396,7 @@
         Stop: Stop,
         UIEvents: UIEvents,
         FrameCount: FrameCount,
-        GetCanvas: GetCanvas,
+        getCanvas: getCanvas,
         CreateImageData: CreateImageData,
         SetDebugger: SetDebugger,
         Debug: Debug
