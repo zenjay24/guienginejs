@@ -27,9 +27,9 @@
 
     _objectsToRender = new Array(),
 
-    _canvasContext = [];
+    _canvasContext = [],
 
-    var Start = function () {
+    Start = function () {
         // initialize data-gengine elements
         _initCanvas();
 
@@ -177,7 +177,7 @@
 
                 if (typeof values == 'object') {
                     values.canvasid = thisCanvasID;
-                    return _newString(values);
+                    return geString(values);
                 }
 
                 else if (typeof values == 'string') {
@@ -186,7 +186,7 @@
                     var values = $.parseJSON(_str.attr('data-gengine'));
                     values.content = _str.text();
 
-                    return _newString(values);
+                    return geString(values);
                 }
             },
             NewImg: function (value) {
@@ -258,124 +258,51 @@
     geObject = function (specs, my) {
         var that;
         my = my || {};
+        my.geType = _geTypes.GEOBJECT;
+        my.x = specs.x || 0;
+        my.y = specs.y || 0;
+        my.canvasid = specs.canvasid;
+
+        var getX = function () {
+            return my.x;
+        },
+        getY = function () {
+            return my.y;
+        },
+        getCanvasId = function () {
+            return my.canvasid;
+        };
+
+
         that = {};
+        that.GetX = getX;
+        that.GetY = getY;
+        that.GetCanvasID = getCanvasId;
+
+        _addToRender(that);
         return that;
     },
-    _newString = function (values) {
 
-        content = values == null || values.content == null ? "" : values.content;
-        color = values == null || values.color == null ? "#FFFFFF" : values.color;
-        x = values == null || values.x == null ? 0 : values.x;
-        y = values == null || values.y == null ? 0 : values.y;
-        fontSize = values == null || values.fontSize == null ? "20px" : values.fontSize;
-        fontFamily = values == null || values.fontFamily == null ? "sans" : values.fontFamily;
+    geString = function (specs, my) {
+        var that;
+        my = my || {};
+        my.geType = _geTypes.STRING;
+        my.content = specs.content || "NEW STRING";
+        my.color = specs.color || "#ffffff";
+        my.fontSize = specs.fontSize || "20px";
+        my.fontFamily = specs.fontFamily || "sans";
 
-        var data = {
-            "getype": _geTypes.STRING,
-            "canvasid": values.canvasid,
-            "content": content,
-            "color": color,
-            "x": x,
-            "y": y,
-            "dx": 0,
-            "dy":0,
-            "fontSize": fontSize,
-            "fontFamily": fontFamily
+        var Draw = function (context) {
+            context.fillStyle = my.color;
+            context.font = my.fontSize + " " + my.fontFamily;
+            context.textBaseline = "top";
+            context.fillText(my.content, my.x, my.y);
         };
 
-        var strObject = {
+        that = geObject(specs, my);
+        that.Draw = Draw;
 
-            // GetData returns a readonly object with the current values
-            GetData: function () {
-                return {
-                    "getype": data._geTypes.STRING,
-                    "canvasid": data.canvasid,
-                    "content": data.content,
-                    "color": data.color,
-                    "x": data.x,
-                    "y": data.y,
-                    "fontSize": data.fontSize,
-                    "fontFamily": data.fontFamily
-                };
-            },
-            GetGEType: function () {
-                return data.getype;
-            },
-            GetCanvasID: function () {
-                return data.canvasid;
-            },
-            SetText: function (value) {
-                data.content = value;
-                return this;
-            },
-            GetText: function () {
-                return data.content;
-            },
-            SetX: function (value) {
-                data.x = value;
-                return this;
-            },
-            GetX: function () {
-                return data.x;
-            },
-            SetY: function (value) {
-                data.y = value;
-                return this;
-            },
-            GetY: function () {
-                return data.y;
-            },
-            MoveByX: function (value) {
-                data.x += value;
-                return this;
-            },
-            MoveX: function (value) {
-                data.dx = value;
-                return this;
-            },
-            MoveByY: function (value) {
-                data.y += value;
-                return this;
-            },
-            MoveY: function (value) {
-                data.dy = value;
-                return this;
-            },
-            SetColor: function (value) {
-                data.color = value;
-                return this;
-            },
-            GetColor: function () {
-                return data.color;
-            },
-            SetFontSize: function (value) {
-                data.fontSize = value;
-                return this;
-            },
-            GetFontSize: function () {
-            },
-            SetFontFamily: function (value) {
-                data.fontFamily = value;
-                return this;
-            },
-            GetFontFamily: function () {
-                return data.fontFamily;
-            },
-            GamePhysics: function () {
-
-                data.x = data.x + data.dx;
-                data.y = data.y + data.dy;
-            },
-            Draw: function (context) {
-                context.fillStyle = data.color;
-                context.font = data.fontSize + " " + data.fontFamily;
-                context.textBaseline = "top";
-                context.fillText(data.content, data.x, data.y);
-            }
-        };
-
-        _addToRender(strObject);
-        return strObject;
+        return that;
     },
 
     _newImg = function (values) {
@@ -478,5 +405,4 @@
         SetDebugger: SetDebugger,
         Debug: Debug
     };
-
 }(jQuery);
