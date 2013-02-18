@@ -254,27 +254,21 @@
             window.open(this.toDataURL(), "canvasImage", "left=0,top=0,width=" + this.width + ",height=" + this.height + ",toolbar=0,resizable=0");
         });
     },
-    _newGEObject = function (values) {
-        var data = { x: values.x };
-        var geObj = {
-            SetX: function (value) {
-                data.x = value;
-                return this;
-            },
-            GetX: function () {
-                return data.x;
-            }
-        };
-        return geObj;
+    // Using the Functional Pattern to define the new base of object
+    geObject = function (specs, my) {
+        var that;
+        my = my || {};
+        that = {};
+        return that;
     },
     _newString = function (values) {
 
-        var content = values == null || values.content == null ? "" : values.content;
-        var color = values == null || values.color == null ? "#FFFFFF" : values.color;
-        var x = values == null || values.x == null ? 0 : values.x;
-        var y = values == null || values.y == null ? 0 : values.y;
-        var fontSize = values == null || values.fontSize == null ? "20px" : values.fontSize;
-        var fontFamily = values == null || values.fontFamily == null ? "sans" : values.fontFamily;
+        content = values == null || values.content == null ? "" : values.content;
+        color = values == null || values.color == null ? "#FFFFFF" : values.color;
+        x = values == null || values.x == null ? 0 : values.x;
+        y = values == null || values.y == null ? 0 : values.y;
+        fontSize = values == null || values.fontSize == null ? "20px" : values.fontSize;
+        fontFamily = values == null || values.fontFamily == null ? "sans" : values.fontFamily;
 
         var data = {
             "getype": _geTypes.STRING,
@@ -289,8 +283,6 @@
             "fontFamily": fontFamily
         };
 
-        var geObj = _newGEObject(data);
-
         var strObject = {
 
             // GetData returns a readonly object with the current values
@@ -300,7 +292,7 @@
                     "canvasid": data.canvasid,
                     "content": data.content,
                     "color": data.color,
-                    //"x": data.x,
+                    "x": data.x,
                     "y": data.y,
                     "fontSize": data.fontSize,
                     "fontFamily": data.fontFamily
@@ -319,13 +311,13 @@
             GetText: function () {
                 return data.content;
             },
-            //SetX: function (value) {
-            //    data.x = value;
-            //    return this;
-            //},
-            //GetX: function () {
-            //    return data.x;
-            //},
+            SetX: function (value) {
+                data.x = value;
+                return this;
+            },
+            GetX: function () {
+                return data.x;
+            },
             SetY: function (value) {
                 data.y = value;
                 return this;
@@ -381,8 +373,6 @@
                 context.fillText(data.content, data.x, data.y);
             }
         };
-
-        $.extend(strObject, geObj, strObject);
 
         _addToRender(strObject);
         return strObject;
