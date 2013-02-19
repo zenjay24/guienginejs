@@ -7,7 +7,7 @@
     _debuggerDiv,
 
     _geTypes = {
-        "GEOBJECT":"GEOBJECT",
+        "GEOBJECT": "GEOBJECT",
         "STRING": "STRING",
         "IMAGE": "IMAGE"
     },
@@ -110,12 +110,12 @@
     },
 
     handleGamePhysics = function () {
-        
+
         _canvas.each(function (canvasIndex, canvas) {
             var thisCanvas = this;
 
             $(_objectsToRender).each(function (objectIndex, objectToRender) {
-                if (this.getCanvasID() == thisCanvas.id && this.GamePhysics) {
+                if (this.getCanvasId() == thisCanvas.id && this.GamePhysics) {
                     //this.GamePhysics();
                 }
             });
@@ -129,13 +129,13 @@
             if (!context) {
                 return;
             }
-            
+
             // Clearing Screen
             context.fillStyle = _backgroundColors[this.id];
             context.fillRect(0, 0, this.width, this.height);
 
             $(_objectsToRender).each(function (objectIndex, objectToRender) {
-                if (this.getCanvasID() == thisCanvas.id)
+                if (this.getCanvasId() == thisCanvas.id)
                     this.draw(context);
             });
         });
@@ -176,7 +176,7 @@
                 var values = typeof value == 'undefined' || value == null ? {} : value;
 
                 if (typeof values == 'object') {
-                    values.canvasid = thisCanvasID;
+                    values.canvasId = thisCanvasID;
                     return geString(values);
                 }
 
@@ -193,7 +193,7 @@
                 var values = typeof value == 'undefined' || value == null ? {} : value;
 
                 if (typeof values == 'object') {
-                    values.canvasid = thisCanvasID;
+                    values.canvasId = thisCanvasID;
                     return _newImg(values);
                 }
 
@@ -204,18 +204,17 @@
 
                     values.src = _img.attr('src');
 
-                    return _newImg(values);
+                    return geImage(values);
                 }
             },
             BindGEObjects: function () {
                 thisCanvas = this;
                 var _strs = $("GEString");
                 var _objects = new Array();
-                for(var i=0; i<_strs.length; i++)
-                {
+                for (var i = 0; i < _strs.length; i++) {
                     var attr = _strs[i].attributes['data-gengine'];
                     var values = $.parseJSON(attr.value);
-                    if (values.canvasid != thisCanvasID) break;
+                    if (values.canvasId != thisCanvasID) break;
 
                     var geobject = thisCanvas.NewString(_strs[i].id);
                     _objects.push({ "id": _strs[i].id, "geobject": geobject });
@@ -225,7 +224,7 @@
                 for (var i = 0; i < _imgs.length; i++) {
                     var attr = _imgs[i].attributes['data-gengine'];
                     var values = $.parseJSON(attr.value);
-                    if (values.canvasid != thisCanvasID) return;
+                    if (values.canvasId != thisCanvasID) return;
 
                     var geoobject = thisCanvas.NewImg(_imgs[i].id);
                     _objects.push({ "id": _imgs[i].id, "geobject": geobject });
@@ -255,6 +254,39 @@
         });
     },
     // parts with functionallity
+    positional = function (that, specs, my) {
+        var getX = function () {
+            return my.x;
+        },
+            getY = function () {
+                return my.y;
+            };
+
+        my = my || {};
+        my.x = specs.x || 0;
+        my.y = specs.y || 0;
+
+        that.getX = getX;
+        that.getY = getY;
+
+        return that;
+    },
+
+    renderable = function (that, specs, my) {
+        var getCanvasId = function () {
+            return my.canvasId;
+        };
+        my = my || {};
+        my.canvasId = specs.canvasId;
+
+        that.getCanvasId = getCanvasId;
+        that = positional(that, specs, my);
+
+        _addToRender(that);
+
+        return that;
+    },
+
     eventuality = function (that) {
         var registry = {},
 
@@ -299,33 +331,14 @@
 
         return that;
     },
+
     // Using the Functional Pattern to define the new base of object
     geObject = function (specs, my) {
-        var that,
-            getX = function () {
-                return my.x;
-            },
-            getY = function () {
-                return my.y;
-            },
-            getCanvasId = function () {
-                return my.canvasid;
-            };
+        var that = {};
 
         my = my || {};
         my.geType = _geTypes.GEOBJECT;
-        my.x = specs.x || 0;
-        my.y = specs.y || 0;
-        my.canvasid = specs.canvasid;
 
-        that = {};
-        that.getX = getX;
-        that.getY = getY;
-        that.getCanvasID = getCanvasId;
-
-        eventuality(that);
-
-        _addToRender(that);
         return that;
     },
 
@@ -347,50 +360,43 @@
 
         that = geObject(specs, my);
         that.draw = draw;
+
+        renderable(that, specs, my);
+        eventuality(that);
+
         return that;
     },
 
-    _newImg = function (values) {
+    geImage = function (specs, my) {
+        var that,
+            draw = function (context) {
+                if (my.img.src == "") {
+                    my.img.src = my.src;
 
-        src = values == null || values.src == null ? "" : values.src;
-        color = values == null || values.color == null ? "#FFFFFF" : values.color;
-        x = values == null || values.x == null ? 0 : values.x;
-        y = values == null || values.y == null ? 0 : values.y;
-
-        var data = {
-            "getype": _geTypes.IMAGE,
-            "canvasid": values.canvasid,
-            "src": src,
-            "color": color,
-            "x": x,
-            "y": y,
-            "img": new Image()
-        };
-
-        var imgObject = {
-
-            getCanvasID: function () {
-                return data.canvasid;
-            },
-           
-            draw: function (context) {
-                if (data.img.src == "") {
-                    data.img.src = data.src;
-
-                    data.img.onload = function () {
-                        context.drawImage(data.img, data.x, data.y);
+                    my.img.onload = function () {
+                        context.drawImage(my.img, my.x, my.y);
                     };
-                    return;
+                    return that;
                 }
 
-                context.drawImage(data.img, data.x, data.y);
-            }
-        };
+                context.drawImage(my.img, my.x, my.y);
+                return that;
+            };
 
-        _addToRender(imgObject);
-        return imgObject;
-    };
+        my = my || {};
+        my.geType = _geTypes.IMAGE;
+        my.src = specs.src || "~/Images/logo3w.png";
+        my.img = new Image();
 
+        that = geObject(specs, my);
+        that.draw = draw;
+
+        renderable(that, specs, my);
+        eventuality(that);
+
+        return that;
+    }
+    ;
     return {
         Start: Start,
         Stop: Stop,
