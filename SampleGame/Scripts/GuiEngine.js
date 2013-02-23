@@ -1,5 +1,4 @@
 ﻿(function (window, $) {
-
     var frameCount = 0,
         useDebugger = false,
         debuggerOutput,
@@ -26,7 +25,6 @@
         },
         bindUIEvents = function (idx, element) {
             var gameData = $.parseJSON($(this).attr('data-gengine'));
-
             $(gameData.handleEvents).each(
                 function () {
                     if (this === "mouse") {
@@ -40,18 +38,14 @@
         },
         initCanvas = function () {
             canvas = $('canvas[data-gengine]');
-
             canvas.each(bindUIEvents);
-
             canvas.each(setDefaultCanvasContext);
         },
         outputDebug = function () {
             if (useDebugger === null) {
                 return;
             }
-
             var debugstr = "FrameCount: " + frameCount;
-
             debuggerOutput.html(debugstr);
         },
         handleUserUIEvents = function () {
@@ -59,7 +53,6 @@
         handleInteractionRules = function () {
         },
         handleGamePhysics = function () {
-
             canvas.each(function (canvasIndex, myCanvas) {
                 var thisCanvas = this;
 
@@ -74,11 +67,9 @@
             canvas.each(function (canvasIndex, myCanvas) {
                 var thisCanvas = this,
                     context = this.getContext(canvasContext[this.id]);
-
                 if (!context) {
                     return;
                 }
-
                 // Clearing Screen
                 context.fillStyle = backgroundColors[this.id];
                 context.fillRect(0, 0, this.width, this.height);
@@ -95,90 +86,71 @@
             });
         },
         Loop = function () {
-
             if (useDebugger) {
                 outputDebug();
             }
-
             // Handle User UI Events
             handleUserUIEvents();
-
             // Handle Interaction Rules
             handleInteractionRules();
-
             // Handle Game Physics
             handleGamePhysics();
-
             // Draw
             draw();
-
             frameCount += 1;
         },
         Start = function () {
             // initialize data-gengine elements
             initCanvas();
-
             //Call loop by Interval
             interval = setInterval(Loop, 1000 / 30);
             return this;
         },
-
         SetDebugger = function (value) {
             debuggerOutput = $("#" + value);
         },
-
         Debug = function (value) {
             useDebugger = value;
         },
-
-
         FrameCount = function () {
             return frameCount;
         },
-
-
         SetCanvasContext = function (value) {
             canvasContext[this.id] = value;
         },
-
-
         UIEvents = function () {
             return uiEvents;
         },
-
         addToRender = function (objectToAdd) {
             objectsToRender.push(objectToAdd);
+            return objectToAdd;
         },
         // parts with functionallity
         positional = function (that, specs, my) {
-            var getX = function () {
+            my = $.extend(my || {}, {
+                x: specs.x || 0,
+                y: specs.y || 0
+            });
+            $.extend(that, {
+                getX : function () {
                     return my.x;
                 },
-                getY = function () {
+                getY : function () {
                     return my.y;
                 },
-                setX = function (value) {
+                setX : function (value) {
                     my.x = value;
                 },
-                setY = function (value) {
+                setY : function (value) {
                     my.y = value;
-                };
-
-            my = my || {};
-            my.x = specs.x || 0;
-            my.y = specs.y || 0;
-
-            that.getX = getX;
-            that.getY = getY;
-            that.setX = setX;
-            that.setY = setY;
-
+                }
+            });
             return that;
         },
         eventuality = function (that) {
-            var registry = {},
-
-                fire = function (event, argList) {
+            var registry = {};
+            $.extend(that, {
+                fire: function (event, argList) {
                     var array,
                         func,
                         handler,
@@ -195,18 +167,14 @@
                             if (typeof func === 'string') {
                                 func = this[func];
                             }
-
                             params = $.extend(argList, handler.parameters || {});
-
                             args = [event, params];
-
                             func.apply(this, args);
                         }
                     }
-                    return this;
+                    return that;
                 },
-
-                on = function (type, method, parameters) {
+                on: function (type, method, parameters) {
                     var handler = {
                         method: method,
                         parameters: parameters
@@ -216,90 +184,85 @@
                     } else {
                         registry[type] = [handler];
                     }
-                    return this;
-                };
-
-            that.fire = fire;
-            that.on = on;
-
+                    return that;
+                }
+            });
             return that;
         },
         renderable = function (that, specs, my) {
-            var getCanvasId = function () {
-                    return my.canvasId;
-                },
-                ondraw = function (event, context) {
+            // private functions
+            var ondraw = function (event, context) {
+                // This allows late binding to the that.draw method
+                if (this.hasOwnProperty("draw")) {
                     that.draw(context);
-                };
-
-            my = my || {};
-            my.canvasId = specs.canvasId;
-
-            that.getCanvasId = getCanvasId;
-            that = positional(that, specs, my);
-
-            if (!that.on) {
+                }
+            };
+            // protected values
+            my = $.extend(my || {}, {
+                canvasId: specs.canvasId
+            });
+            if (!that.hasOwnProperty('getX')) {
+                positional(that, specs, my);
+            }
+            if (!that.hasOwnProperty('on')) {
                 eventuality(that);
             }
-
+            // bind the draw event to the ondraw 
+            // handler which calls draw
             that.on("draw", ondraw);
-
             addToRender(that);
-
+            $.extend(that, {
+                getCanvasId: function () {
+                    return my.canvasId;
+                }
+            });
             return that;
         },
-
         // Using the Functional Pattern to define the new base of object
         geObject = function (specs, my) {
             var that = {};
-
-            my = my || {};
-            my.geType = geTypes.GEOBJECT;
-
+            my = $.extend(my || {}, {
+                geType: geTypes.GEOBJECT
+            });
             return that;
         },
         geImage = function (specs, my) {
-            var that,
-                draw = function (context) {
+            var that = geObject(specs, my);
+            my = $.extend(my || {}, {
+                geType: geTypes.IMAGE,
+                src: specs.src || "~/Images/logo3w.png",
+                img: new Image()
+            });
+            renderable(that, specs, my);
+            $.extend(that, {
+                draw: function (context) {
                     if (my.img.src === "") {
                         my.img.src = my.src;
-
                         my.img.onload = function () {
                             context.drawImage(my.img, my.x, my.y);
                         };
                         return that;
                     }
-
                     context.drawImage(my.img, my.x, my.y);
                     return that;
-                };
-
-            my = my || {};
-            my.geType = geTypes.IMAGE;
-            my.src = specs.src || "~/Images/logo3w.png";
-            my.img = new Image();
-
-            that = geObject(specs, my);
-            that.draw = draw;
-
-            renderable(that, specs, my);
-
+                }
+            });
             return that;
         },
         geString = function (specs, my) {
-            var that;
-
-            my = my || {};
-            my.geType = geTypes.STRING;
-            my.content = specs.content || "NEW STRING";
-            my.color = specs.color || "#ffffff";
-            my.fontSize = specs.fontSize || "20px";
-            my.fontFamily = specs.fontFamily || "sans";
-
-            that = geObject(specs, my);
-
+            // get "parent" methods
+            var that = geObject(specs, my);
+            // protected values
+            my = $.extend(my || {}, {
+                geType: geTypes.STRING,
+                content: specs.content || "NEW STRING",
+                color: specs.color || "#ffffff",
+                fontSize: specs.fontSize || "20px",
+                fontFamily: specs.fontFamily || "sans"
+            });
+            // get methods from parts
             renderable(that, specs, my);
-
+            // public methods
             $.extend(that, {
                 draw: function (context) {
                     context.fillStyle = my.color;
@@ -337,7 +300,6 @@
                     return my.fontFamily;
                 }
             });
-
             return that;
         },
         getCanvas = function (canvasid) {
@@ -419,20 +381,16 @@
                         return this;
                     }
                 };
-
             return canvasObject;
         },
-
         Stop = function () {
             clearInterval(interval);
         },
-
         CreateImageData = function (canvasid) {
             canvas.each(function () {
                 if (this.id !== canvasid) {
                     return;
                 }
-
                 window.open(this.toDataURL(),
                     "canvasImage", "left=0,top=0,width=" + this.width
                     + ",height=" + this.height + ",toolbar=0,resizable=0");
@@ -448,7 +406,5 @@
             SetDebugger: SetDebugger,
             Debug: Debug
         };
-
     window.GuiEngine = guiEngine;
-
 })(window, jQuery);
