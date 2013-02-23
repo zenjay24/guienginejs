@@ -126,7 +126,7 @@
             return objectToAdd;
         },
         // parts with functionallity
-        positional = function (that, specs, my) {
+        positionality = function (that, specs, my) {
             my = $.extend(my || {}, {
                 x: specs.x || 0,
                 y: specs.y || 0
@@ -189,7 +189,7 @@
             });
             return that;
         },
-        renderable = function (that, specs, my) {
+        renderality = function (that, specs, my) {
             // private functions
             var ondraw = function (event, context) {
                 // This allows late binding to the that.draw method
@@ -202,7 +202,7 @@
                 canvasId: specs.canvasId
             });
             if (!that.hasOwnProperty('getX')) {
-                positional(that, specs, my);
+                positionality(that, specs, my);
             }
             if (!that.hasOwnProperty('on')) {
                 eventuality(that);
@@ -217,6 +217,15 @@
                 }
             });
             return that;
+        },
+        nodality = function (that) {
+            $.extend(that, {
+                appendChild: function (node) {
+
+                },
+                removeChild: function (node) {
+                }
+            });
         },
         // Using the Functional Pattern to define the new base of object
         geObject = function (specs, my) {
@@ -233,7 +242,7 @@
                 src: specs.src || "~/Images/logo3w.png",
                 img: new Image()
             });
-            renderable(that, specs, my);
+            renderality(that, specs, my);
             $.extend(that, {
                 draw: function (context) {
                     if (my.img.src === "") {
@@ -261,7 +270,7 @@
                 fontFamily: specs.fontFamily || "sans"
             });
             // get methods from parts
-            renderable(that, specs, my);
+            renderality(that, specs, my);
             // public methods
             $.extend(that, {
                 draw: function (context) {
