@@ -1,4 +1,4 @@
-﻿(function (window, $) {
+﻿(function guiEngine(window, $) {
     var frameCount = 0,
         useDebugger = false,
         debuggerOutput,
@@ -17,13 +17,13 @@
         uiEvents = [],
         objectsToRender = [],
         canvasContext = [],
-        eventHandler = function (event) {
+        eventHandler = function eventHandler(event) {
             uiEvents.push({
                 'interval': interval,
                 'event': event
             });
         },
-        bindUIEvents = function (idx, element) {
+        bindUIEvents = function bindUIEvents(idx, element) {
             var gameData = $.parseJSON($(this).attr('data-gengine'));
             $(gameData.handleEvents).each(
                 function () {
@@ -33,29 +33,28 @@
                 }
             );
         },
-        setDefaultCanvasContext = function () {
+        setDefaultCanvasContext = function setDefaultCanvasContext() {
             canvasContext[this.id] = canvasTypes.TWOD;
         },
-        initCanvas = function () {
+        initCanvas = function initCanvas() {
             canvas = $('canvas[data-gengine]');
             canvas.each(bindUIEvents);
             canvas.each(setDefaultCanvasContext);
         },
-        outputDebug = function () {
+        outputDebug = function outputDebug() {
             if (useDebugger === null) {
                 return;
             }
             var debugstr = "FrameCount: " + frameCount;
             debuggerOutput.html(debugstr);
         },
-        handleUserUIEvents = function () {
+        handleUserUIEvents = function handleUserUIEvents() {
         },
-        handleInteractionRules = function () {
+        handleInteractionRules = function handleInteractionRules() {
         },
-        handleGamePhysics = function () {
+        handleGamePhysics = function handleGamePhysics() {
             canvas.each(function (canvasIndex, myCanvas) {
                 var thisCanvas = this;
-
                 $(objectsToRender).each(function (objectIndex, objectToRender) {
                     if (this.getCanvasId() === thisCanvas.id && this.GamePhysics) {
                         var foo = "ADD SOME CODE HERE";
@@ -63,8 +62,8 @@
                 });
             });
         },
-        draw = function () {
-            canvas.each(function (canvasIndex, myCanvas) {
+        draw = function draw() {
+            canvas.each(function drawCanvas(canvasIndex, myCanvas) {
                 var thisCanvas = this,
                     context = this.getContext(canvasContext[this.id]);
                 if (!context) {
@@ -74,7 +73,7 @@
                 context.fillStyle = backgroundColors[this.id];
                 context.fillRect(0, 0, this.width, this.height);
 
-                $(objectsToRender).each(function (objectIndex, objectToRender) {
+                $(objectsToRender).each(function fireDraws(objectIndex, objectToRender) {
                     if (this.getCanvasId() === thisCanvas.id) {
                         if (this.fire) {
                             this.fire("draw", context);
@@ -85,7 +84,7 @@
                 });
             });
         },
-        Loop = function () {
+        loop = function loop() {
             if (useDebugger) {
                 outputDebug();
             }
@@ -99,58 +98,58 @@
             draw();
             frameCount += 1;
         },
-        Start = function () {
+        start = function start() {
             // initialize data-gengine elements
             initCanvas();
             //Call loop by Interval
-            interval = setInterval(Loop, 1000 / 30);
+            interval = setInterval(loop, 1000 / 30);
             return this;
         },
-        SetDebugger = function (value) {
+        SetDebugger = function SetDebugger(value) {
             debuggerOutput = $("#" + value);
         },
-        Debug = function (value) {
+        Debug = function Debug(value) {
             useDebugger = value;
         },
-        FrameCount = function () {
+        FrameCount = function FrameCount() {
             return frameCount;
         },
-        SetCanvasContext = function (value) {
+        SetCanvasContext = function SetCanvasContext(value) {
             canvasContext[this.id] = value;
         },
-        UIEvents = function () {
+        UIEvents = function UIEvents() {
             return uiEvents;
         },
-        addToRender = function (objectToAdd) {
+        addToRender = function addToRender(objectToAdd) {
             objectsToRender.push(objectToAdd);
             return objectToAdd;
         },
         // parts with functionallity
-        positionality = function (that, specs, my) {
+        positionality = function positionality(that, specs, my) {
             my = $.extend(my || {}, {
                 x: specs.x || 0,
                 y: specs.y || 0
             });
             $.extend(that, {
-                getX : function () {
+                getX : function getX() {
                     return my.x;
                 },
-                getY : function () {
+                getY : function getY() {
                     return my.y;
                 },
-                setX : function (value) {
+                setX : function setX(value) {
                     my.x = value;
                 },
-                setY : function (value) {
+                setY: function setY(value) {
                     my.y = value;
                 }
             });
             return that;
         },
-        eventuality = function (that) {
+        eventuality = function eventuality(that) {
             var registry = {};
             $.extend(that, {
-                fire: function (event, argList) {
+                fire: function fire(event, argList) {
                     var array,
                         func,
                         handler,
@@ -174,7 +173,7 @@
                     }
                     return that;
                 },
-                on: function (type, method, parameters) {
+                on: function on(type, method, parameters) {
                     var handler = {
                         method: method,
                         parameters: parameters
@@ -189,9 +188,9 @@
             });
             return that;
         },
-        renderality = function (that, specs, my) {
+        renderality = function renderality(that, specs, my) {
             // private functions
-            var ondraw = function (event, context) {
+            var ondraw = function ondraw(event, context) {
                 // This allows late binding to the that.draw method
                 if (this.hasOwnProperty("draw")) {
                     that.draw(context);
@@ -212,30 +211,37 @@
             that.on("draw", ondraw);
             addToRender(that);
             $.extend(that, {
-                getCanvasId: function () {
+                getCanvasId: function getCanvasId() {
                     return my.canvasId;
                 }
             });
             return that;
         },
-        nodality = function (that) {
+        nodality = function nodality(that) {
             $.extend(that, {
-                appendChild: function (node) {
+                appendChild: function appendChild(node) {
 
                 },
-                removeChild: function (node) {
+                removeChild: function removeChild(node) {
                 }
             });
         },
-        // Using the Functional Pattern to define the new base of object
-        geObject = function (specs, my) {
+        // Using the Functional Object Pattern to define the new base of object
+        /**
+         * Creates the basic guiEngine Object
+         * 
+         * @method getObject
+         * @param {Object} specs
+         * @param {Object} my
+         */
+        geObject = function geObject(specs, my) {
             var that = {};
             my = $.extend(my || {}, {
                 geType: geTypes.GEOBJECT
             });
             return that;
         },
-        geImage = function (specs, my) {
+        geImage = function getImage(specs, my) {
             var that = geObject(specs, my);
             my = $.extend(my || {}, {
                 geType: geTypes.IMAGE,
@@ -244,10 +250,10 @@
             });
             renderality(that, specs, my);
             $.extend(that, {
-                draw: function (context) {
+                draw: function draw(context) {
                     if (my.img.src === "") {
                         my.img.src = my.src;
-                        my.img.onload = function () {
+                        my.img.onload = function onload() {
                             context.drawImage(my.img, my.x, my.y);
                         };
                         return that;
@@ -258,7 +264,7 @@
             });
             return that;
         },
-        geString = function (specs, my) {
+        geString = function geString(specs, my) {
             // get "parent" methods
             var that = geObject(specs, my);
             // protected values
@@ -273,75 +279,73 @@
             renderality(that, specs, my);
             // public methods
             $.extend(that, {
-                draw: function (context) {
+                draw: function draw(context) {
                     context.fillStyle = my.color;
                     context.font = my.fontSize + " " + my.fontFamily;
                     context.textBaseline = "top";
                     context.fillText(my.content, my.x, my.y);
                     return this;
                 },
-                setText: function (value) {
+                setText: function setText(value) {
                     my.content = value;
                     return this;
                 },
-                getText: function () {
+                getText: function getText() {
                     return my.content;
                 },
-                setColor: function (value) {
+                setColor: function setColor(value) {
                     my.color = value;
                     return this;
                 },
-                getColor: function () {
+                getColor: function getColor() {
                     return my.color;
                 },
-                setFontSize: function (value) {
+                setFontSize: function setFontSize(value) {
                     my.fontSize = value;
                     return this;
                 },
-                getFontSize: function () {
+                getFontSize: function getFontSize() {
                     return my.fontSize;
                 },
-                setFontFamily: function (value) {
+                setFontFamily: function setFontFamily(value) {
                     my.fontFamily = value;
                     return this;
                 },
-                getFontFamily: function () {
+                getFontFamily: function getFontFamily() {
                     return my.fontFamily;
                 }
             });
             return that;
         },
-        getCanvas = function (canvasid) {
+        getCanvas = function getCanvas(canvasid) {
             var thisGame = this,
-                thisCanvasID = canvasid,
+                thisCanvasId = canvasid,
                 canvasObject = {
                     "Game": thisGame,
                     "Canvas": $("canvas#" + canvasid),
-                    NewString: function (value) {
+                    newString: function newString(value) {
                         var values = value || {},
                             strObject,
                             str,
                             attr;
-
                         if (typeof values === 'object') {
-                            values.canvasId = thisCanvasID;
+                            values.canvasId = thisCanvasId;
                             strObject = geString(values);
                         } else if (typeof values === 'string') {
                             str = $("#" + values);
                             attr = str.attr('data-gengine');
                             values = $.parseJSON(str.attr('data-gengine'));
-                            values.content = str.text();
+                            values.content = str.text() || values.content;
                             strObject = geString(values);
                         }
                         return strObject;
                     },
-                    NewImg: function (value) {
+                    newImage: function newImage(value) {
                         var values = value || {},
                             imageObject,
                             img;
-
                         if (typeof values === 'object') {
-                            values.canvasId = thisCanvasID;
+                            values.canvasId = thisCanvasId;
                             imageObject = geImage(values);
                         } else if (typeof values === 'string') {
                             img = $("#" + values);
@@ -351,38 +355,27 @@
                         }
                         return imageObject;
                     },
-                    BindGEObjects: function () {
+                    bindGEObjects: function bindGEObjects() {
                         var thisCanvas = this,
                             strs = $("GEString"),
-                            objects = [],
-                            i,
                             imgs = $("GEIMG"),
-                            attr,
-                            values,
-                            geobject;
-
-                        for (i = 0; i < strs.length; i += 1) {
-                            attr = strs[i].attributes['data-gengine'];
-                            values = $.parseJSON(attr.value);
-                            if (values.canvasId !== thisCanvasID) {
-                                break;
-                            }
-
-                            geobject = thisCanvas.NewString(strs[i].id);
-                            objects.push({ "id": strs[i].id, "geobject": geobject });
-                        }
-
-                        for (i = 0; i < imgs.length; i += 1) {
-                            attr = imgs[i].attributes['data-gengine'];
-                            values = $.parseJSON(attr.value);
-                            if (values.canvasId !== thisCanvasID) {
-                                return;
-                            }
-
-                            geobject = thisCanvas.NewImg(imgs[i].id);
-                            objects.push({ "id": imgs[i].id, "geobject": geobject });
-                        }
-
+                            objects = [],
+                            invokeCreate = function invokeCreate(ele, newObjectType) {
+                                var attr = $(ele).attr('data-gengine'),
+                                    values = $.parseJSON(attr),
+                                    geobject;
+                                if (values.canvasId !== thisCanvasId) {
+                                    return;
+                                }
+                                geobject = newObjectType(ele.id);
+                                objects.push({ "id": ele.id, "geobject": geobject });
+                            };
+                        strs.each(function () {
+                            invokeCreate(this, thisCanvas.newString);
+                        });
+                        imgs.each(function () {
+                            invokeCreate(this, thisCanvas.newImage);
+                        });
                         return objects;
                     },
                     setBackgroundColor: function (color) {
@@ -392,10 +385,10 @@
                 };
             return canvasObject;
         },
-        Stop = function () {
+        stop = function stop() {
             clearInterval(interval);
         },
-        CreateImageData = function (canvasid) {
+        CreateImageData = function CreateImageData(canvasid) {
             canvas.each(function () {
                 if (this.id !== canvasid) {
                     return;
@@ -405,9 +398,9 @@
                     + ",height=" + this.height + ",toolbar=0,resizable=0");
             });
         },
-        guiEngine = {
-            Start: Start,
-            Stop: Stop,
+        guiEngineMethods = {
+            start: start,
+            stop: stop,
             UIEvents: UIEvents,
             FrameCount: FrameCount,
             getCanvas: getCanvas,
@@ -415,5 +408,5 @@
             SetDebugger: SetDebugger,
             Debug: Debug
         };
-    window.GuiEngine = guiEngine;
+    window.guiEngine = guiEngineMethods;
 }(window, jQuery));
