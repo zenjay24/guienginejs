@@ -146,6 +146,19 @@
             });
             return that;
         },
+        movability = function movability(that, my) {
+            my = my || {};
+            $.extend(that, {
+                moveBy: function moveBy(value) {
+                    if (!isNaN(value.x))
+                        that.setX(that.getX() + value.x);
+                    if (!isNaN(value.y))
+                        that.setY(that.getY() + value.y);
+                    return that;
+                }
+            });
+            return that;
+        },
         eventuality = function eventuality(that) {
             var registry = {};
             $.extend(that, {
@@ -248,6 +261,7 @@
                 src: specs.src || "~/Images/logo3w.png",
                 img: new Image()
             });
+            movability(that, my);
             renderality(that, specs, my);
             $.extend(that, {
                 draw: function draw(context) {
@@ -409,4 +423,5 @@
             Debug: Debug
         };
     window.guiEngine = guiEngineMethods;
+    $('gestring').hide();
 }(window, jQuery));

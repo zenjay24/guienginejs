@@ -2,15 +2,15 @@
     
 }
 
-<canvas id="gameCanvas" data-gengine='{"handleEvents":["mouse", "touch"]}' width="1280" height="720">
-</canvas>
-<GEString id='string1' data-gengine='{"canvasId":"gameCanvas","color":"#FFF00F","x":200,"y":400,"content":"I Love"}'></GEString>
-<gestring id='string2' data-gengine='{"canvasId":"gameCanvas","color":"#0000FF","x":600,"y":400,"content":"a lot"}'>oh oh</gestring>
-<GEIMG id="img1" src="~/Images/logo3w.png" data-gengine='{"canvasId":"gameCanvas","x":280,"y":400}' />
 <form>
     <input id="createImageData" type="button" value="TakeScreenShot" />
     <input id="speechBox" type="text" x-webkit-speech />
 </form>
+<canvas id="gameCanvas" data-gengine='{"handleEvents":["mouse", "touch"]}' width="640" height="480">
+</canvas>
+<GEString id='string1' data-gengine='{"canvasId":"gameCanvas","color":"#FFF00F","x":200,"y":200,"content":"I Love"}'></GEString>
+<gestring id='string2' data-gengine='{"canvasId":"gameCanvas","color":"#0000FF","x":450,"y":200,"content":"a lot"}'></gestring>
+<GEIMG id="img1" src="~/Images/Chrome.png" data-gengine='{"canvasId":"gameCanvas","x":280,"y":200}' />
 <div id="gedebugger"></div>
 <script src="~/Scripts/jquery-1.7.1.js"></script>
 <script src="~/scripts/guiengine.js"></script>
@@ -30,15 +30,12 @@
         gameObjs = canvas.bindGEObjects();
         $("#speechBox").bind('webkitspeechchange', function (evt) {
             gameObjs[0].geobject.setText($(this).val());
-            //gameObj[0].geobject.setText();
         });
         $("#speechBox").bind('webkitspeechchange', function (evt) {
             gameObjs[0].geobject.setText($(this).val());
-            //gameObj[0].geobject.setText();
         });
         $("#speechBox").bind('change', function (evt) {
             gameObjs[1].geobject.setText($(this).val());
-            //gameObj[0].geobject.setText();
         });
     });
 </script>
